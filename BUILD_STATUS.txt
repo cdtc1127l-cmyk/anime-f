@@ -1,0 +1,4 @@
+NOVA Native Android Project scaffold generated.
+APK NOT compiled in this environment: Android SDK/Gradle unavailable.
+Use GitHub Actions workflow .github/workflows/android-apk.yml for first compile.
+Do not describe this package as a tested APK.
