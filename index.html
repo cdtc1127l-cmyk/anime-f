@@ -1217,7 +1217,7 @@ function openWatchingDetail(id){
 function saveEpisodeMeta(id,season,episode){
  const item=watchingList.find(x=>x.id===id);if(!item)return; item.episodeMeta=item.episodeMeta||{}; const k=season+'-'+episode;
  const title=document.getElementById('epTitle_'+season+'_'+episode)?.value.trim()||'',air=document.getElementById('epAir_'+season+'_'+episode)?.value||'',desc=document.getElementById('epDesc_'+season+'_'+episode)?.value.trim()||'';
- if(title||air||desc)item.episodeMeta[k]={title,airDate:air,description:desc};else delete item.episodeMeta[k]; saveWatching();openWatchingDetail(id);toast('Episode details saved.');
+ const oldMeta=item.episodeMeta[k]||{}; if(title||air||desc||oldMeta.thumbnail)item.episodeMeta[k]={title,airDate:air,description:desc,thumbnail:oldMeta.thumbnail||''};else delete item.episodeMeta[k]; saveWatching();openWatchingDetail(id);toast('Episode details saved.');
 }
 function editEpisodeMeta(id,season,episode){
  const item=watchingList.find(x=>x.id===id);if(!item)return; const m=(item.episodeMeta&&item.episodeMeta[season+'-'+episode])||{},box=document.getElementById('meta_'+season+'_'+episode);if(!box)return;
