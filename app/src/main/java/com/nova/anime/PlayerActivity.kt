@@ -156,7 +156,7 @@ class PlayerActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
     private fun openExternal() {
         try {
-            val uri = FileProvider.getUriForFile(this, "${applicationId}.fileprovider", File(path))
+            val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", File(path))
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, "video/*")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
