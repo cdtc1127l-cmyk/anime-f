@@ -563,6 +563,31 @@ body.reels-view .home-only{display:none!important}body.reels-view #watching,body
 
 </style>
 
+
+/* === Screenshot dashboard interaction polish === */
+.shot-search{cursor:pointer}.shot-search:focus-within{border-color:rgba(215,120,255,.6);box-shadow:0 0 0 3px rgba(160,55,255,.12)}
+.shot-search input{width:100%;border:0;outline:0;background:transparent;color:#fff;font:inherit}
+.shot-search input::placeholder{color:#8f82a5}
+.shot-toplinks span,.shot-nav button{cursor:pointer}
+.shot-item{cursor:pointer}
+.shot-item>div:nth-child(2){min-width:0;flex:1}
+.shot-item b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shot-panel h3 span{cursor:pointer}
+.shot-profile{cursor:pointer}
+@media(max-width:720px){
+ .shot-content{margin-left:0;width:100%;padding:10px 10px 86px}
+ .shot-topbar{height:auto;min-height:54px;border-radius:16px;padding:7px;overflow:hidden}
+ .shot-toplinks{display:none}
+ .shot-search{flex:1;width:auto}
+ .shot-hero{min-height:470px;border-radius:20px}
+ .shot-hero-copy{padding:28px 20px}
+ .shot-hero h1{font-size:32px!important}
+ .shot-stats{margin:10px!important;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+ .shot-stat{margin:7px 0}
+ .shot-grid{grid-template-columns:1fr!important}
+ .shot-grid .shot-panel:last-child{grid-column:auto}
+ .shot-watch img{width:18%;min-width:48px}
+}
 /* === Screenshot-matched dashboard v2 === */
 :root{--shot-purple:#7c22ff;--shot-violet:#b44cff;--shot-pink:#f03cff;--shot-bg:#080016;--shot-card:rgba(20,5,45,.72);--shot-line:rgba(179,94,255,.34)}
 body{background:radial-gradient(circle at 30% 0%,#26005c 0,#090016 38%,#05000b 100%)!important}
@@ -662,7 +687,7 @@ body:before{opacity:.08!important}
  <div class="shot-content">
   <div class="shot-topbar">
    <div class="shot-toplinks"><span class="active">Home</span><span onclick="shotGo('library')">My Anime</span><span onclick="shotGo('watching')">Episodes</span><span onclick="shotGo('watching')">Weekly</span><span onclick="shotGo('stats')">Stats</span></div>
-   <div class="shot-search">⌕ <span>Search anime...</span></div><div class="shot-profile">✦</div>
+   <div class="shot-search" onclick="document.getElementById('shotSearchInput')?.focus()">⌕ <input id="shotSearchInput" type="search" autocomplete="off" placeholder="Search anime..." aria-label="Search anime"></div><div class="shot-profile" onclick="openStorage()" title="Settings">✦</div>
   </div>
   <div class="shot-hero">
    <div class="shot-hero-copy"><span class="shot-kicker">▶ Continue Watching</span><h1 id="shotHeroTitle">The Lost Demon</h1><p id="shotHeroMeta">Season 1 • Episode 12 / 24</p><div class="shot-progress"><i id="shotHeroProgress"></i></div><p style="margin-top:12px">A journey of destiny, power and forgotten memories...</p><div class="shot-actions"><button class="primary" onclick="openWatchingAdd()">▶ Continue</button><button onclick="openWatchingAdd()">↥ Upload</button><button onclick="openWatchingAdd()">↻ Replace</button><button>•••</button></div></div>
@@ -1605,8 +1630,15 @@ if(matchMedia('(hover:hover)').matches){
 
 <script>
 function shotGo(view){
- if(view==='home'){document.querySelector('.shot-home')?.scrollIntoView({behavior:'smooth'});return;}
- if(view==='stats'){document.querySelector('.shot-home')?.scrollIntoView({behavior:'smooth'});return;}
+ document.querySelectorAll('.shot-nav button').forEach(b=>b.classList.remove('active'));
+ const map={home:0,library:1,watching:2,weekly:3,stats:4};
+ const idx=map[view];
+ if(idx!==undefined)document.querySelectorAll('.shot-nav button')[idx]?.classList.add('active');
+ if(view==='home'||view==='stats'){
+   document.querySelector('.shot-home')?.scrollIntoView({behavior:'smooth',block:'start'});
+   if(view==='stats')document.querySelector('.shot-stats')?.scrollIntoView({behavior:'smooth',block:'center'});
+   return;
+ }
  switchView(view==='library'?'library':'watching');
 }
 function shotImg(item){
@@ -1615,7 +1647,9 @@ function shotImg(item){
 function shotEsc(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
 function renderShotDashboard(){
  const list=(typeof watchingList!=='undefined'&&Array.isArray(watchingList))?watchingList:[];
- const recent=list.slice(0,4), watch=list.slice(0,6);
+ const recent=[...list].sort((a,b)=>(b.updated||b.created||0)-(a.updated||a.created||0)).slice(0,4);
+ const watch=list.slice(0,6);
+
  const completed=list.filter(x=>x.done&&Object.values(x.done).filter(Boolean).length>=((x.seasons||1)*(x.episodes||1))).length;
  const eps=list.reduce((n,x)=>n+(x.done?Object.values(x.done).filter(Boolean).length:0),0);
  const watching=Math.max(0,list.length-completed);
@@ -1635,7 +1669,18 @@ function renderShotDashboard(){
  document.getElementById('shotWeekly').innerHTML=(watch.length?watch.slice(0,4):[]).map((x,i)=>'<div class="shot-item"><div class="shot-cover" style="background:linear-gradient(135deg,#5a12a5,#17002e);display:grid;place-items:center;color:#fff;font-size:17px">'+(i+1)+'</div><div><b>'+shotEsc(x.name||'Anime')+'</b><small>'+(x.day||'This week')+' • Episode '+(x.episodes||0)+'</small></div></div>').join('')||'<div style="color:#9d8eaa;font-size:11px;padding:15px">Weekly releases will appear here.</div>';
  document.getElementById('shotWatchlist').innerHTML=watch.length?watch.map(x=>shotImg(x)?'<img src="'+shotEsc(shotImg(x))+'" alt="'+shotEsc(x.name)+'">':'<div class="shot-cover"></div>').join(''):'<div style="color:#9d8eaa;font-size:11px;padding:15px">Your watchlist is empty.</div>';
 }
-document.addEventListener('DOMContentLoaded',()=>setTimeout(renderShotDashboard,120));
+document.addEventListener('DOMContentLoaded',()=>{
+ setTimeout(renderShotDashboard,120);
+ const q=document.getElementById('shotSearchInput');
+ q?.addEventListener('keydown',e=>{
+   if(e.key==='Enter'&&q.value.trim()){
+     const term=q.value.trim().toLowerCase();
+     const found=(typeof watchingList!=='undefined'&&Array.isArray(watchingList))?watchingList.find(x=>String(x.name||'').toLowerCase().includes(term)):null;
+     if(found&&typeof openWatchingDetail==='function')openWatchingDetail(found.id);
+     else if(typeof toast==='function')toast('No anime found for "'+q.value.trim()+'"');
+   }
+ });
+});
 setTimeout(()=>{try{renderShotDashboard();}catch(e){}},900);
 </script>
 </body>
