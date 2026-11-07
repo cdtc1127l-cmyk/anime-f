@@ -702,6 +702,25 @@ body:before{opacity:.08!important}
   <div class="shot-quote">“Anime is not just entertainment,<br>It's a journey of endless imagination.” ✦</div>
  </div>
 </section>
+<!-- Screenshot matched secondary views -->
+<section class="shot-view library" aria-label="My Anime">
+ <div class="view-head"><div><h1>My Anime</h1><div class="sub">Your complete anime collection</div></div><button class="btn primary" onclick="openWatchingAdd()">＋ Add Anime</button></div>
+ <div class="toolbar"><input id="shotAnimeFilter" placeholder="Search your anime..." oninput="filterShotCards(this.value)"><button class="active">All</button><button>Watching</button><button>Completed</button><button>Plan to Watch</button></div>
+ <div class="cards" id="shotAnimeCards"></div>
+</section>
+<section class="shot-view episodes" aria-label="Episodes">
+ <div class="view-head"><div><h1>Episodes</h1><div class="sub">Track every season and episode</div></div></div>
+ <div class="wide" id="shotEpisodeRows"></div>
+</section>
+<section class="shot-view weekly" aria-label="Weekly Releases">
+ <div class="view-head"><div><h1>Weekly Releases</h1><div class="sub">Your upcoming anime schedule</div></div></div>
+ <div class="cards" id="shotWeeklyCards"></div>
+</section>
+<section class="shot-view stats" aria-label="Stats">
+ <div class="view-head"><div><h1>Statistics</h1><div class="sub">Your anime watching progress</div></div></div>
+ <div class="metric-grid"><div class="metric"><b id="svWatch">0</b><span>Watching</span></div><div class="metric"><b id="svDone">0</b><span>Completed</span></div><div class="metric"><b id="svEp">0</b><span>Episodes Watched</span></div><div class="metric"><b id="svHours">0h</b><span>Watch Time</span></div></div>
+ <div class="wide"><h3 style="margin-top:0;color:#fff;font-size:13px">Watching Progress</h3><div id="svProgress"></div></div>
+</section>
 <!-- ═════════ HERO ═════════ -->
  <section class="hero home-only" id="top">
   <div class="scene hero-art" aria-hidden="true"><img src="hero.webp" alt=""></div>
@@ -1631,15 +1650,31 @@ if(matchMedia('(hover:hover)').matches){
 <script>
 function shotGo(view){
  document.querySelectorAll('.shot-nav button').forEach(b=>b.classList.remove('active'));
- const map={home:0,library:1,watching:2,weekly:3,stats:4};
- const idx=map[view];
+ const map={home:0,library:1,watching:2,weekly:3,stats:4}; const idx=map[view];
  if(idx!==undefined)document.querySelectorAll('.shot-nav button')[idx]?.classList.add('active');
- if(view==='home'||view==='stats'){
-   document.querySelector('.shot-home')?.scrollIntoView({behavior:'smooth',block:'start'});
-   if(view==='stats')document.querySelector('.shot-stats')?.scrollIntoView({behavior:'smooth',block:'center'});
-   return;
- }
- switchView(view==='library'?'library':'watching');
+ document.body.classList.remove('shot-library-view','shot-episodes-view','shot-weekly-view','shot-stats-view');
+ if(view==='home'){document.querySelector('.shot-home')?.scrollIntoView({behavior:'smooth',block:'start'});return;}
+ if(view==='library'){document.body.classList.add('shot-library-view');renderShotSecondary();return;}
+ if(view==='watching'){document.body.classList.add('shot-episodes-view');renderShotSecondary();return;}
+ if(view==='weekly'){document.body.classList.add('shot-weekly-view');renderShotSecondary();return;}
+ if(view==='stats'){document.body.classList.add('shot-stats-view');renderShotSecondary();return;}
+}
+function shotCover(x){return x&&x.poster?'<img src="'+shotEsc(x.poster)+'" alt="">':''}
+function filterShotCards(term){document.querySelectorAll('#shotAnimeCards .cardx').forEach(c=>c.style.display=String(c.dataset.name||'').includes(String(term||'').toLowerCase())?'':'none')}
+function renderShotSecondary(){
+ const list=(typeof watchingList!=='undefined'&&Array.isArray(watchingList))?watchingList:[];
+ const cards=document.getElementById('shotAnimeCards');
+ if(cards)cards.innerHTML=list.map(x=>'<div class="cardx" data-name="'+shotEsc(String(x.name||'').toLowerCase())+'" onclick="typeof openWatchingDetail===\'function\'&&openWatchingDetail(\''+shotEsc(x.id||'')+'\')"><div class="posterx">'+shotCover(x)+'</div><h3>'+shotEsc(x.name||'Untitled')+'</h3><p>S'+(x.seasons||1)+' • '+(x.episodes||0)+' episodes</p></div>').join('')||'<div class="sub">No anime added yet.</div>';
+ const rows=document.getElementById('shotEpisodeRows');
+ if(rows)rows.innerHTML=list.map(x=>'<div class="rowx"><div class="thumb">'+shotCover(x)+'</div><div class="grow"><b>'+shotEsc(x.name||'Untitled')+'</b><small>Season '+(x.seasons||1)+' • '+(x.episodes||0)+' episodes</small></div><button class="shot-play" onclick="typeof openWatchingDetail===\'function\'&&openWatchingDetail(\''+shotEsc(x.id||'')+'\')">Open</button></div>').join('')||'<div class="sub">No episodes to show.</div>';
+ const wc=document.getElementById('shotWeeklyCards');
+ if(wc)wc.innerHTML=list.slice(0,8).map((x,i)=>'<div class="cardx"><div class="posterx">'+shotCover(x)+'</div><h3>'+shotEsc(x.name||'Anime')+'</h3><p>'+shotEsc(x.day||['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][i%7])+' • Episode '+(x.episodes||0)+'</p></div>').join('')||'<div class="sub">Weekly releases will appear here.</div>';
+ const done=list.filter(x=>x.done&&Object.values(x.done).filter(Boolean).length>=((x.seasons||1)*(x.episodes||1))).length;
+ const ep=list.reduce((n,x)=>n+(x.done?Object.values(x.done).filter(Boolean).length:0),0);
+ const watch=Math.max(0,list.length-done);
+ const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+ set('svWatch',watch);set('svDone',done);set('svEp',ep);set('svHours',Math.round(ep*.4)+'h');
+ const pg=document.getElementById('svProgress'); if(pg)pg.innerHTML=list.slice(0,8).map(x=>{const d=x.done?Object.values(x.done).filter(Boolean).length:0,t=Math.max(1,(x.seasons||1)*(x.episodes||1)),p=Math.min(100,Math.round(d/t*100));return '<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;color:#cfc1dd;font-size:10px"><span>'+shotEsc(x.name||'Anime')+'</span><span>'+p+'%</span></div><div class="shot-mini" style="margin-top:6px"><i style="width:'+p+'%"></i></div></div>'}).join('')||'<div class="sub">Add anime to see progress.</div>';
 }
 function shotImg(item){
  return item&&item.poster?item.poster:'';
