@@ -47,7 +47,7 @@ function renderWeekGrid(){
 function savedPlayback(){
  if(!native)return null;
  const candidates=Object.entries(nativeVideos).map(([key,video])=>{
-  const match=key.match(/^(.+)__s(\\d+)__e(\\d+)$/);
+  const match=key.match(/^(.+)__s(\d+)__e(\d+)$/);
   if(!match||!video||!(video.positionMs>1500))return null;
   const item=watchingList.find(x=>x.id===match[1]);
   if(!item||(video.durationMs>0&&video.positionMs>=video.durationMs-5000))return null;
@@ -119,6 +119,10 @@ function createShell(){
  '<button class="bk-side-link" data-bk-view="stats" onclick="showBankaiView(\'stats\')"><span>▥</span>Stats</button>'+
  '<button class="bk-side-link" data-bk-view="watchlist" onclick="showBankaiView(\'watchlist\')"><span>☆</span>Watchlist</button>'+
  '<div class="bk-side-spacer"></div><div class="bk-dark-toggle"><span>☾ Dark Mode</span><i></i></div>';
+ const divider=document.createElement('div');divider.className='bk-side-divider';
+ const libraryButton=document.createElement('button');libraryButton.type='button';libraryButton.className='bk-side-link';libraryButton.innerHTML='<span>▣</span>Library';libraryButton.addEventListener('click',()=>window.openBankaiLibrary());
+ const settingsButton=document.createElement('button');settingsButton.type='button';settingsButton.className='bk-side-link';settingsButton.dataset.bkView='settings';settingsButton.innerHTML='<span>⚙</span>Settings';settingsButton.addEventListener('click',()=>showBankaiView('settings'));
+ const sideSpacer=side.querySelector('.bk-side-spacer');sideSpacer.before(divider,libraryButton,settingsButton);
  wrap.insertBefore(side,wrap.firstChild);
  nav.innerHTML='<nav class="links" aria-label="Main navigation">'+
  '<a data-bk-view="home" class="active" href="#home" onclick="showBankaiView(\'home\');return false">⌂ Home</a>'+
@@ -204,7 +208,7 @@ function wire(){
 }
 window.showBankaiView=showBankaiView;
 window.openBankaiLibrary=()=>{if(native&&window.NOVA&&typeof NOVA.openLibrary==='function')NOVA.openLibrary();else showBankaiView('settings');};
-window.bankaiRefreshNativeVideos=async()=>{await syncNative();renderAll();};
+window.bankaiRefreshNativeVideos=async()=>{await syncNative();renderAll();const info=$('bkStorageInfo');if(info&&native)info.textContent='App video storage: '+(NOVA.storageBytes()/1048576).toFixed(1)+' MB';};
 window.bankaiToggleWatchlist=toggleWL;
 window.bankaiRemoveWeekly=id=>{const x=watchingList.find(v=>v.id===id);if(!x)return;x.inWeekly=false;saveWatching();renderAll();};
 window.bankaiStartWatching=name=>{watchlist=watchlist.filter(v=>String(v).toLowerCase()!==String(name).toLowerCase());saveWL();showBankaiView('episodes');openLibraryAnime(name);renderAll();};
