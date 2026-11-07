@@ -114,7 +114,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun externalPlayer(item: StoredVideo) {
         try {
-            val uri = FileProvider.getUriForFile(this, "${applicationId}.fileprovider", File(item.path))
+            val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", File(item.path))
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, "video/*")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
