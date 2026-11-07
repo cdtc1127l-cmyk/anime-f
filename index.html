@@ -646,6 +646,33 @@ body:before{opacity:.08!important}
 .shot-watch img{width:18%;border-radius:12px}
 @media(max-width:1050px){.shot-content{margin-left:174px;width:calc(100% - 186px)}}
 @media(max-width:720px){.shot-sidebar{height:68px}.shot-content{margin-left:0;width:100%;padding:8px 8px 92px}.shot-hero{min-height:520px}.shot-hero-copy{padding:34px 23px}.shot-hero h1{font-size:36px!important}.shot-search{width:180px}}
+</style>
+<style>
+/* Enhanced episode details + navigation */
+.episode-detail-hero{display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;padding:16px;margin-bottom:16px;border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(168,85,247,.045));border:1px solid rgba(216,180,254,.14)}
+.episode-detail-hero .detail-poster{width:132px;height:188px;object-fit:cover;border-radius:16px;box-shadow:0 18px 36px -14px #000}
+.episode-detail-copy{min-width:0;display:flex;flex-direction:column;justify-content:center}
+.episode-detail-copy .eyebrow{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.episode-detail-copy h3{margin:5px 0 7px;font-size:clamp(20px,4vw,30px);line-height:1.15}
+.episode-detail-copy .detail-sub{color:var(--muted);font-size:12px;margin-bottom:14px}
+.detail-stat-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.detail-stat{padding:7px 10px;border-radius:11px;background:rgba(255,255,255,.055);border:1px solid var(--line2);font-size:11px;color:var(--muted)}
+.detail-stat b{color:#fff}
+.episode-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.episode-nav button{flex:1;min-width:120px}
+.episode-tile{scroll-margin-top:90px}
+.episode-tile.has-thumb{display:grid;grid-template-columns:92px minmax(0,1fr);column-gap:12px}
+.episode-tile .episode-thumb{grid-row:1 / span 4;width:92px;height:62px;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#17092b}
+.episode-tile .episode-main{min-width:0}
+.episode-tile.has-thumb .episode-file-actions,.episode-tile.has-thumb .video-saved,.episode-tile.has-thumb .episode-meta-summary,.episode-tile.has-thumb .episode-meta-actions-row{grid-column:2}
+.episode-meta-summary p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:620px){
+ .episode-detail-hero{grid-template-columns:86px minmax(0,1fr);gap:12px}
+ .episode-detail-hero .detail-poster{width:86px;height:122px}
+ .episode-nav button{min-width:0}
+ .episode-tile.has-thumb{grid-template-columns:72px minmax(0,1fr)}
+ .episode-tile .episode-thumb{width:72px;height:52px}
+}
 </style></head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -1199,21 +1226,36 @@ function openWatchingDetail(id){
  let seasons='';
  for(let sn=1;sn<=item.seasons;sn++){
   const maxEp=seasonEpisodeCount(item,sn);
-  seasons+=`<section class="episode-season"><h4>Season ${sn} <span class="season-count">${maxEp} Episodes</span></h4><div class="episode-grid">`;
+  seasons+=\`<section class="episode-season"><h4>Season \${sn} <span class="season-count">\${maxEp} Episodes</span></h4><div class="episode-grid">\`;
   for(let ep=1;ep<=maxEp;ep++){
    const k=sn+'-'+ep,done=!!item.done[k],hasVideo=!!videoRecords[videoKey(item.id,sn,ep)],meta=episodeMetaFor(item,sn,ep);
+   const hasThumb=!!meta.thumbnail;
    const metaSummary=(meta.title||meta.airDate||meta.description)?'<div class="episode-meta-summary">'+(meta.title?'<b>'+esc(meta.title)+'</b>':'')+(meta.airDate?'<small>Air Date: '+esc(meta.airDate)+'</small>':'')+(meta.description?'<p>'+esc(meta.description)+'</p>':'')+'</div>':'';
-   seasons+=`<div class="episode-tile ${done?'is-done':''}"><button class="ep-btn ${done?'done':''}" onclick="toggleWatchEpisode('${item.id}',${sn},${ep})" aria-pressed="${done}" title="Toggle watched status"><span class="ep-check">${done?'✓':'○'}</span><span>EP ${ep}</span><small>${done?'WATCHED':'NOT WATCHED'}</small></button><div class="episode-file-actions">${hasVideo?`<button class="video-play" onclick="playEpisode('${item.id}',${sn},${ep})">▶ <span>Play Video</span></button><button class="video-add" onclick="chooseEpisodeVideo('${item.id}',${sn},${ep})" title="Replace saved video"><span class="upload-symbol">↻</span><span>Replace</span></button><button class="video-delete" onclick="removeEpisodeVideo('${item.id}',${sn},${ep})" title="Delete saved video">Delete</button>`:`<button class="video-add" onclick="chooseEpisodeVideo('${item.id}',${sn},${ep})"><span class="upload-symbol">＋</span><span>Upload Video</span></button>`}</div><div class="${hasVideo?'video-saved':'video-empty'}">${hasVideo?'<i></i> VIDEO SAVED · '+formatBytes(videoRecords[videoKey(item.id,sn,ep)].size||0):'No video added'}</div>${metaSummary}<div id="meta_${sn}_${ep}" class="episode-meta-actions-row"><button class="episode-details-btn" onclick="editEpisodeMeta('${item.id}',${sn},${ep})">${meta.title||meta.airDate||meta.description||meta.thumbnail?'✎ Edit Details':'＋ Add Details'}</button></div></div>`;
+   const thumb=hasThumb?'<img class="episode-thumb" src="'+esc(meta.thumbnail)+'" alt="Episode thumbnail">':'';
+   seasons+=\`<div id="episode_\${sn}_\${ep}" class="episode-tile \${done?'is-done':''} \${hasThumb?'has-thumb':''}">\${thumb}<div class="episode-main"><button class="ep-btn \${done?'done':''}" onclick="toggleWatchEpisode('\${item.id}',\${sn},\${ep})" aria-pressed="\${done}" title="Toggle watched status"><span class="ep-check">\${done?'✓':'○'}</span><span>EP \${ep}</span><small>\${done?'WATCHED':'NOT WATCHED'}</small></button></div><div class="episode-file-actions">\${hasVideo?\`<button class="video-play" onclick="playEpisode('\${item.id}',\${sn},\${ep})">▶ <span>Play Video</span></button><button class="video-add" onclick="chooseEpisodeVideo('\${item.id}',\${sn},\${ep})" title="Replace saved video"><span class="upload-symbol">↻</span><span>Replace</span></button><button class="video-delete" onclick="removeEpisodeVideo('\${item.id}',\${sn},\${ep})" title="Delete saved video">Delete</button>\`:\`<button class="video-add" onclick="chooseEpisodeVideo('\${item.id}',\${sn},\${ep})"><span class="upload-symbol">＋</span><span>Upload Video</span></button>\`}</div><div class="\${hasVideo?'video-saved':'video-empty'}">\${hasVideo?'<i></i> VIDEO SAVED · '+formatBytes(videoRecords[videoKey(item.id,sn,ep)].size||0):'No video added'}</div>\${metaSummary}<div id="meta_\${sn}_\${ep}" class="episode-meta-actions-row"><button class="episode-details-btn" onclick="editEpisodeMeta('\${item.id}',\${sn},\${ep})">\${meta.title||meta.airDate||meta.description||meta.thumbnail?'✎ Edit Details':'＋ Add Details'}</button></div></div>\`;
   }
   seasons+='</div></section>';
  }
- const seasonInputs=Array.from({length:item.seasons},(_,i)=>`<label><span>Season ${i+1} EP</span><input id="seasonEp_${i+1}" class="input" type="number" min="1" max="200" value="${seasonEpisodeCount(item,i+1)}"></label>`).join('');
- box.innerHTML=`<div class="modal-head"><div><h3>${esc(item.name)}</h3><p>${item.year?esc(item.year)+' · ':''}${esc(item.day)} · ${item.seasons} Season · ${p.total} Episode</p></div><button class="x" onclick="closeWatchingDetail()" aria-label="Close">✕</button></div>
-  <div class="detail-head">${item.poster?`<img class="detail-poster" src="${item.poster}" alt="Poster">`:''}<div style="flex:1;min-width:0"><div class="progress-track" style="margin-top:4px"><div class="progress-fill" style="width:${p.pct}%"></div></div><div class="watch-meta"><b>${p.pct}%</b> · ${p.done} / ${p.total} episodes watched</div></div></div>
-  <div class="edit-row"><label><span>Seasons</span><input id="eSeasons" class="input" type="number" min="1" max="30" value="${item.seasons}" oninput="renderSeasonEpisodeInputs('${item.id}')"></label><div id="seasonEpisodeInputs" class="season-inputs">${seasonInputs}</div><label><span>Day</span><select id="eDay">${DAYS.map(d=>`<option ${d===item.day?'selected':''}>${d}</option>`).join('')}</select></label><button class="btn sm primary" onclick="updateWatchingMeta('${item.id}')">Save</button></div>
-  ${seasons}<div class="modal-actions" style="margin-top:20px"><button onclick="closeWatchingDetail()">Close</button></div>`;
+ const seasonInputs=Array.from({length:item.seasons},(_,i)=>\`<label><span>Season \${i+1} EP</span><input id="seasonEp_\${i+1}" class="input" type="number" min="1" max="200" value="\${seasonEpisodeCount(item,i+1)}"></label>\`).join('');
+ const next=nextEpisode(item);
+ const nextText=next?'S'+next.s+' · E'+next.e:'Completed';
+ box.innerHTML=\`<div class="modal-head"><div><h3>Episode Details</h3><p>Manage seasons, videos, thumbnails and episode metadata</p></div><button class="x" onclick="closeWatchingDetail()" aria-label="Close">✕</button></div>
+  <div class="episode-detail-hero">\${item.poster?\`<img class="detail-poster" src="\${esc(item.poster)}" alt="Poster">\`:'<div class="detail-poster" style="display:grid;place-items:center;background:#17092b">NOVA</div>'}<div class="episode-detail-copy"><span class="eyebrow">Anime Tracker</span><h3>\${esc(item.name)}</h3><div class="detail-sub">\${item.year?esc(item.year)+' · ':''}\${esc(item.day)} · \${item.seasons} Season\${item.seasons===1?'':'s'}</div><div class="detail-stat-row"><span class="detail-stat">Progress <b>\${p.pct}%</b></span><span class="detail-stat">Watched <b>\${p.done}/\${p.total}</b></span><span class="detail-stat">Next <b>\${nextText}</b></span></div><div class="progress-track"><div class="progress-fill" style="width:\${p.pct}%"></div></div><div class="episode-nav">\${next?\`<button class="btn primary sm" onclick="goToEpisode('\${item.id}',\${next.s},\${next.e})">▶ Continue \${nextText}</button>\`:'<button class="btn sm" disabled>✓ All Episodes Watched</button>'}<button class="btn sm" onclick="goToFirstUnwatched('\${item.id}')">Next Unwatched</button></div></div></div>
+  <div class="edit-row"><label><span>Seasons</span><input id="eSeasons" class="input" type="number" min="1" max="30" value="\${item.seasons}" oninput="renderSeasonEpisodeInputs('\${item.id}')"></label><div id="seasonEpisodeInputs" class="season-inputs">\${seasonInputs}</div><label><span>Day</span><select id="eDay">\${DAYS.map(d=>\`<option \${d===item.day?'selected':''}>\${d}</option>\`).join('')}</select></label><button class="btn sm primary" onclick="updateWatchingMeta('\${item.id}')">Save</button></div>
+  \${seasons}<div class="modal-actions" style="margin-top:20px"><button onclick="closeWatchingDetail()">Close</button></div>\`;
  document.getElementById('watchDetailBg').style.display='grid';box.scrollTop=keep;
 }
+function nextEpisode(item){
+ normalizeEpisodePlan(item);
+ for(let s=1;s<=item.seasons;s++){const total=seasonEpisodeCount(item,s);for(let e=1;e<=total;e++)if(!item.done[s+'-'+e])return{s,e};}
+ return null;
+}
+function goToEpisode(id,s,e){
+ const item=watchingList.find(x=>x.id===id);if(!item)return;
+ openWatchingDetail(id);
+ setTimeout(()=>document.getElementById('episode_'+s+'_'+e)?.scrollIntoView({behavior:'smooth',block:'center'}),40);
+}
+function goToFirstUnwatched(id){const item=watchingList.find(x=>x.id===id);if(!item)return;const n=nextEpisode(item);if(n)goToEpisode(id,n.s,n.e);else toast('All episodes are watched ✓');}
 function saveEpisodeMeta(id,season,episode){
  const item=watchingList.find(x=>x.id===id);if(!item)return; item.episodeMeta=item.episodeMeta||{}; const k=season+'-'+episode;
  const title=document.getElementById('epTitle_'+season+'_'+episode)?.value.trim()||'',air=document.getElementById('epAir_'+season+'_'+episode)?.value||'',desc=document.getElementById('epDesc_'+season+'_'+episode)?.value.trim()||'';
