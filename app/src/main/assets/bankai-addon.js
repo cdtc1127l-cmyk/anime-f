@@ -218,6 +218,30 @@ document.addEventListener('click',e=>{
  const b=e.target.closest('[data-bankai-watchlist]');if(b){e.preventDefault();e.stopPropagation();const name=b.closest('.card')?.dataset.name;if(name)toggleWL(name);}
  const p=e.target.closest('.bk-watchlist-poster,.bk-watch-card');if(p&&!e.target.closest('button')){const name=p.dataset.name,t=track(name);if(t)openWatchingDetail(t.id);else openLibraryAnime(name);}
 });
+
+const baseImportData=window.importData;
+window.exportData=function(){
+ const data={version:3,anime:custom,statuses,watching:watchingList,bankai:{categories:customCats,watchlist},exportedAt:new Date().toISOString()};
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='bankai-anime-backup.json';a.click();URL.revokeObjectURL(url);
+};
+if(typeof baseImportData==='function'){
+ window.importData=function(event){
+  const file=event&&event.target&&event.target.files&&event.target.files[0];
+  baseImportData(event);
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+   try{
+    const data=JSON.parse(reader.result),extra=data.bankai||{};
+    if(Array.isArray(extra.categories)){customCats=[...new Set(extra.categories.filter(Boolean))];persistCategories();ensureCats();}
+    if(Array.isArray(extra.watchlist)){watchlist=[...new Set(extra.watchlist)];persistWatchlist();}
+    render();renderAll();toast('BANKAI backup restored.');
+   }catch(error){toast('BANKAI category/watchlist data could not be restored.');}
+  };
+  reader.readAsText(file);
+ };
+}
 function init(){
  ensureCats();
  watchingList.forEach(x=>{if(typeof x.inWeekly==='undefined')x.inWeekly=!!(x.day&&x.day!=='TBA');});
