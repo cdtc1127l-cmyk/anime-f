@@ -24,4 +24,11 @@ android {
     }
 
     buildFeatures { buildConfig = true }
+
+    buildTypes {
+        release {
+            // Sign the release variant with the standard debug keystore so the CI APK is directly installable.
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
 }
