@@ -151,6 +151,7 @@ function decorateDetail(id){
  const row=box.querySelector('.bk-week-toggle');row.querySelector('span').textContent=item.inWeekly?'✓ '+(item.day||'TBA')+' · Added to Weekly':'Not in Weekly';
  const toggle=row.querySelector('button');toggle.textContent=item.inWeekly?'Remove from Weekly':'＋ Add to Weekly';
  toggle.onclick=()=>{item.inWeekly=!item.inWeekly;if(item.inWeekly&&(!item.day||item.day==='TBA'))item.day='Friday';saveWatching();openWatchingDetail(id);renderAll();};
+ if(!native)return;
  box.querySelectorAll('.episode-season').forEach((seasonNode,si)=>seasonNode.querySelectorAll('.episode-tile').forEach((tile,ei)=>{
   const sn=si+1,ep=ei+1,key=videoKey(item.id,sn,ep),rec=nativeVideos[key]||(typeof videoRecords!=='undefined'?videoRecords[key]:null),actions=tile.querySelector('.episode-file-actions');if(!actions)return;
   const tools=document.createElement('div');tools.className='bk-video-tools';
