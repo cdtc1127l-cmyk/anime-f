@@ -1189,6 +1189,7 @@ function renderResume(){
  box.onclick=()=>openWatchingDetail(item.id);box.onkeydown=e=>{if(e.key==='Enter')openWatchingDetail(item.id)};
  box.hidden=false;
 }
+function episodeMetaFor(item,s,e){return (item.episodeMeta&&item.episodeMeta[s+'-'+e])||{};}
 function openWatchingDetail(id){
  const item=watchingList.find(x=>x.id===id);if(!item)return;
  normalizeEpisodePlan(item);
@@ -1209,6 +1210,15 @@ function openWatchingDetail(id){
   <div class="edit-row"><label><span>Seasons</span><input id="eSeasons" class="input" type="number" min="1" max="30" value="${item.seasons}" oninput="renderSeasonEpisodeInputs('${item.id}')"></label><div id="seasonEpisodeInputs" class="season-inputs">${seasonInputs}</div><label><span>Day</span><select id="eDay">${DAYS.map(d=>`<option ${d===item.day?'selected':''}>${d}</option>`).join('')}</select></label><button class="btn sm primary" onclick="updateWatchingMeta('${item.id}')">Save</button></div>
   ${seasons}<div class="modal-actions" style="margin-top:20px"><button onclick="closeWatchingDetail()">Close</button></div>`;
  document.getElementById('watchDetailBg').style.display='grid';box.scrollTop=keep;
+}
+function saveEpisodeMeta(id,season,episode){
+ const item=watchingList.find(x=>x.id===id);if(!item)return; item.episodeMeta=item.episodeMeta||{}; const k=season+'-'+episode;
+ const title=document.getElementById('epTitle_'+season+'_'+episode)?.value.trim()||'',air=document.getElementById('epAir_'+season+'_'+episode)?.value||'',desc=document.getElementById('epDesc_'+season+'_'+episode)?.value.trim()||'';
+ if(title||air||desc)item.episodeMeta[k]={title,airDate:air,description:desc};else delete item.episodeMeta[k]; saveWatching();openWatchingDetail(id);toast('Episode details saved.');
+}
+function editEpisodeMeta(id,season,episode){
+ const item=watchingList.find(x=>x.id===id);if(!item)return; const m=(item.episodeMeta&&item.episodeMeta[season+'-'+episode])||{},box=document.getElementById('meta_'+season+'_'+episode);if(!box)return;
+ box.innerHTML='<div class="episode-meta-editor"><label><span>Episode Title</span><input id="epTitle_'+season+'_'+episode+'" class="input" value="'+esc(m.title||'')+'" placeholder="Episode title"></label><label><span>Air Date</span><input id="epAir_'+season+'_'+episode+'" class="input" type="date" value="'+esc(m.airDate||'')+'"></label><label><span>Description</span><textarea id="epDesc_'+season+'_'+episode+'" class="input" placeholder="Episode description...">'+esc(m.description||'')+'</textarea></label><div class="episode-meta-actions"><button class="btn sm primary" onclick="saveEpisodeMeta(\\''+id+'\\','+season+','+episode+')">Save Details</button><button class="btn sm" onclick="openWatchingDetail(\\''+id+'\\')">Cancel</button></div></div>';
 }
 function renderSeasonEpisodeInputs(id){
  const item=watchingList.find(x=>x.id===id),box=document.getElementById('seasonEpisodeInputs');if(!item||!box)return;
