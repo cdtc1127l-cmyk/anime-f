@@ -45,8 +45,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NOVA-release-APK
-          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
-
-# Build trigger: Android APK verification
