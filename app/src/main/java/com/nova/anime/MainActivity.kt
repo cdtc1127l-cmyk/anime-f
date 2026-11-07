@@ -163,9 +163,19 @@ class MainActivity : AppCompatActivity() {
             }
             return deleted
         }
+        @JavascriptInterface fun openLibrary() {
+            runOnUiThread { startActivity(Intent(this@MainActivity, LibraryActivity::class.java)) }
+        }
         @JavascriptInterface fun storageBytes(): Long = VideoStore.bytes(this@MainActivity)
         @JavascriptInterface fun openReels() {
             runOnUiThread { startActivity(Intent(this@MainActivity, ReelsActivity::class.java)) }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::web.isInitialized) web.post {
+            web.evaluateJavascript("window.bankaiRefreshNativeVideos && window.bankaiRefreshNativeVideos();", null)
         }
     }
 

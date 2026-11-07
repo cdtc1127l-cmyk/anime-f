@@ -16,11 +16,12 @@ data class StoredVideo(
     val season: Int = 0,
     val episode: Int = 0,
     val positionMs: Long = 0L,
-    val durationMs: Long = 0L
+    val durationMs: Long = 0L,
+    val lastPlayed: Long = added
 )
 
 object VideoStore {
-    private const val PREF = "bankai_video_store"
+    private const val PREF = "nova_video_store"
     private const val KEY = "items"
 
     @Synchronized fun all(context: Context): List<StoredVideo> {
@@ -32,7 +33,8 @@ object VideoStore {
             val item = StoredVideo(
                 o.optString("id"), o.optString("name"), o.optString("path"), o.optLong("added"),
                 o.optString("animeId").takeIf { it.isNotBlank() && it != "null" },
-                o.optInt("season"), o.optInt("episode"), o.optLong("positionMs"), o.optLong("durationMs")
+                o.optInt("season"), o.optInt("episode"), o.optLong("positionMs"), o.optLong("durationMs"),
+                o.optLong("lastPlayed", o.optLong("added"))
             )
             if (item.id.isNotBlank() && File(item.path).isFile) out.add(item)
         }
@@ -74,7 +76,7 @@ object VideoStore {
 
     @Synchronized fun updateProgress(context: Context, id: String, position: Long, duration: Long) {
         persist(context, all(context).map {
-            if (it.id == id) it.copy(positionMs = position.coerceAtLeast(0L), durationMs = duration.coerceAtLeast(0L)) else it
+            if (it.id == id) it.copy(positionMs = position.coerceAtLeast(0L), durationMs = duration.coerceAtLeast(0L), lastPlayed = System.currentTimeMillis()) else it
         })
     }
 
@@ -83,7 +85,7 @@ object VideoStore {
         all(context).filter { it.animeId != null && it.season > 0 && it.episode > 0 }.forEach { item ->
             result.put(episodeKey(item.animeId!!, item.season, item.episode), JSONObject()
                 .put("id", item.id).put("name", item.name).put("size", File(item.path).length())
-                .put("positionMs", item.positionMs).put("durationMs", item.durationMs).put("native", true))
+                .put("positionMs", item.positionMs).put("durationMs", item.durationMs).put("lastPlayed", item.lastPlayed).put("native", true))
         }
         return result.toString()
     }
@@ -113,7 +115,7 @@ object VideoStore {
         items.forEach { v ->
             array.put(JSONObject().put("id", v.id).put("name", v.name).put("path", v.path).put("added", v.added)
                 .put("animeId", v.animeId).put("season", v.season).put("episode", v.episode)
-                .put("positionMs", v.positionMs).put("durationMs", v.durationMs))
+                .put("positionMs", v.positionMs).put("durationMs", v.durationMs).put("lastPlayed", v.lastPlayed))
         }
         context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit().putString(KEY, array.toString()).commit()
     }

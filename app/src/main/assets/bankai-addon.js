@@ -2,6 +2,7 @@
 'use strict';
 const $=id=>document.getElementById(id), CAT='bankai_categories_v1', WL='bankai_watchlist_v1';
 let customCats=[],watchlist=[],nativeVideos={},activeView='home';
+const builtinGenres=genres.slice();
 try{customCats=JSON.parse(localStorage.getItem(CAT)||'[]')||[]}catch(e){}
 try{watchlist=JSON.parse(localStorage.getItem(WL)||'[]')||[]}catch(e){}
 const native=!!(window.NOVA&&typeof window.NOVA.episodeVideoMap==='function');
@@ -16,7 +17,7 @@ function statusFor(item){
  if(t){const p=watchingProgress(t);if(p.total&&p.done===p.total)return '✓ Watched';if(p.done>0)return '◐ Watching · '+p.done+'/'+p.total;return '○ Unwatched';}
  const s=statuses[item.name];return s==='watched'?'✓ Watched':s==='partial'?'◐ Watching':'○ Unwatched';
 }
-function ensureCats(){customCats.forEach(c=>{if(!genres.includes(c))genres.push(c)});if(!genres.includes('Other'))genres.push('Other');}
+function ensureCats(){const next=[...builtinGenres,...customCats.filter(c=>!builtinGenres.includes(c))];if(!next.includes('Other'))next.push('Other');genres.splice(0,genres.length,...next);}
 function manageCats(){
  const current=customCats.join(', ');
  const raw=prompt('তোমার Category-গুলোর নাম comma দিয়ে লেখো। Add/Rename/Delete সব করা যাবে:',current);
@@ -43,17 +44,30 @@ function renderWeekGrid(){
  const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],list=watchingList.filter(x=>x.inWeekly);
  box.innerHTML=days.map(d=>{const items=list.filter(x=>x.day===d),a=items[0];return '<div class="bk-week-day"><b>'+d.slice(0,3)+'</b><small>'+items.length+' Anime</small>'+(a?img(a.name,cover(a)):'<small>—</small>')+(items.length>1?'<small>+'+(items.length-1)+' more</small>':'')+'</div>';}).join('');
 }
+function savedPlayback(){
+ if(!native)return null;
+ const candidates=Object.entries(nativeVideos).map(([key,video])=>{
+  const match=key.match(/^(.+)__s(\\d+)__e(\\d+)$/);
+  if(!match||!video||!(video.positionMs>1500))return null;
+  const item=watchingList.find(x=>x.id===match[1]);
+  if(!item||(video.durationMs>0&&video.positionMs>=video.durationMs-5000))return null;
+  return {item,season:Number(match[2]),episode:Number(match[3]),video};
+ }).filter(Boolean).sort((a,b)=>(b.video.lastPlayed||b.video.added||0)-(a.video.lastPlayed||a.video.added||0));
+ return candidates[0]||null;
+}
+function timeLabel(ms){const sec=Math.floor(Math.max(0,ms)/1000);return String(Math.floor(sec/3600)).padStart(2,'0')+':'+String(Math.floor(sec%3600/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');}
 function renderDashboard(){
  const root=$('bkDashboard');if(!root)return;
- const item=nextUp()[0],p=item?watchingProgress(item):{done:0,total:0,pct:0},n=item?nextEpisode(item):null;
+ const saved=savedPlayback(),item=saved?saved.item:nextUp()[0],p=item?watchingProgress(item):{done:0,total:0,pct:0},n=saved?{s:saved.season,e:saved.episode}:(item?nextEpisode(item):null);
+ const percent=saved&&saved.video.durationMs>0?Math.min(100,Math.round(saved.video.positionMs/saved.video.durationMs*100)):p.pct;
  $('bkFeatureTitle').textContent=item?item.name:'Your Anime Universe';
- $('bkFeatureMeta').textContent=item?'Season '+n.s+' • Episode '+n.e+' / '+p.total:'Your personal anime library';
- $('bkFeatureDesc').textContent=item?'A journey of destiny, power and forgotten memories...':'Add your favourite anime and build your own episode library.';
- $('bkFeatureProgress').style.width=p.pct+'%';
- $('bkFeatureProgressLabel').textContent=item?p.pct+'% · '+p.done+'/'+p.total+' episodes watched':'Ready to start tracking';
+ $('bkFeatureMeta').textContent=item?'Season '+n.s+' • Episode '+n.e+(saved?' · Resume':' / '+p.total):'Your personal anime library';
+ $('bkFeatureDesc').textContent=saved?'Continue from '+timeLabel(saved.video.positionMs):(item?'A journey of destiny, power and forgotten memories...':'Add your favourite anime and build your own episode library.');
+ $('bkFeatureProgress').style.width=percent+'%';
+ $('bkFeatureProgressLabel').textContent=saved?percent+'% · Resume episode':(item?p.pct+'% · '+p.done+'/'+p.total+' episodes watched':'Ready to start tracking');
  $('bkFeatureArt').src='hero.webp';
- $('bkContinue').textContent=item?'▶ Continue':'＋ Add Anime';
- $('bkContinue').onclick=()=>item?openWatchingDetail(item.id):openWatchingAdd();
+ $('bkContinue').textContent=saved?'▶ Continue Episode':(item?'▶ Continue':'＋ Add Anime');
+ $('bkContinue').onclick=()=>saved&&native?NOVA.playEpisodeVideo(item.id,saved.season,saved.episode):(item?openWatchingDetail(item.id):openWatchingAdd());
  $('bkFeatureManage').onclick=()=>item?openWatchingDetail(item.id):showBankaiView('anime');
  const rec=recently(),up=nextUp();
  $('bkRecently').innerHTML=rec.length?rec.map(x=>mini(x,'Recently Watched')).join(''):'<div class="bk-empty">এখনো কোনো Episode Watched করা হয়নি।</div>';
@@ -87,7 +101,7 @@ function renderStatsPage(){
 function renderAll(){renderDashboard();renderWeeklyPage();renderWatchlistPage();renderStatsPage();}
 function showBankaiView(view){
  activeView=view;
- const pages={home:$('bkDashboard'),anime:$('library'),episodes:$('watching'),weekly:$('bkWeeklyPage'),stats:$('bkStatsPage'),watchlist:$('bkWatchlistPage')};
+ const pages={home:$('bkDashboard'),anime:$('library'),episodes:$('watching'),weekly:$('bkWeeklyPage'),stats:$('bkStatsPage'),watchlist:$('bkWatchlistPage'),settings:$('bkSettingsPage')};
  Object.entries(pages).forEach(([k,node])=>{if(node)node.hidden=k!==view});
  const reels=$('reels');if(reels)reels.hidden=true;
  document.querySelectorAll('[data-bk-view]').forEach(n=>n.classList.toggle('active',n.dataset.bkView===view));
@@ -128,6 +142,17 @@ function createShell(){
  const weekly=document.createElement('section');weekly.id='bkWeeklyPage';weekly.className='bk-page';weekly.hidden=true;weekly.innerHTML='<h2 class="bk-page-title">Weekly Releases</h2><p class="bk-page-sub">Remove an Anime from Weekly without deleting its seasons, episodes or videos.</p><div class="bk-week-cards" id="bkWeeklyCards"></div>';dashboard.insertAdjacentElement('afterend',weekly);
  const stats=document.createElement('section');stats.id='bkStatsPage';stats.className='bk-page';stats.hidden=true;stats.innerHTML='<h2 class="bk-page-title">Anime Statistics</h2><p class="bk-page-sub">Your watch progress and library overview.</p><div class="stats" id="bkStatsMetrics" style="margin:0;padding:0;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))"></div>';weekly.insertAdjacentElement('afterend',stats);
  const wl=document.createElement('section');wl.id='bkWatchlistPage';wl.className='bk-page';wl.hidden=true;wl.innerHTML='<h2 class="bk-page-title">My Watchlist</h2><p class="bk-page-sub">Anime saved to watch later.</p><div class="bk-watch-grid" id="bkWatchlistGrid"></div>';stats.insertAdjacentElement('afterend',wl);
+ const settings=document.createElement('section');settings.id='bkSettingsPage';settings.className='bk-page';settings.hidden=true;
+ settings.innerHTML='<h2 class="bk-page-title">Settings & Backup</h2><p class="bk-page-sub">Manage your categories, library backup and private episode videos.</p>'+
+ '<div class="bk-panel" style="margin-bottom:12px"><div class="bk-panel-head"><h3>♙ Data & Backup</h3></div>'+
+ '<p class="bk-page-sub">Export saves your Anime list, categories, statuses, Weekly list, Watchlist and episode tracking data. App-private video files need a separate copy before uninstalling.</p>'+
+ '<div class="bk-action-row"><button class="btn primary" onclick="exportData()">↓ Export JSON Backup</button><button class="btn" onclick="document.getElementById(\'importFile\').click()">↑ Restore JSON Backup</button></div></div>'+
+ '<div class="bk-panel" style="margin-bottom:12px"><div class="bk-panel-head"><h3>▣ Library & Storage</h3></div>'+
+ '<p class="bk-page-sub">Imported videos stay in BANKAI private storage, separate from the original Gallery files.</p>'+
+ '<div class="bk-action-row"><button class="btn" onclick="openBankaiLibrary()">Open Video Library</button><button class="btn" onclick="manageCats()">Manage Categories</button></div>'+
+ '<p id="bkStorageInfo" class="bk-page-sub" style="margin-top:12px">Storage information available on Android.</p></div>'+
+ '<div class="bk-panel"><div class="bk-panel-head"><h3>🌙 Appearance</h3></div><p class="bk-page-sub">BANKAI currently uses the dark purple anime theme from your reference image.</p><button class="btn" onclick="showBankaiView(\'home\')">Back to Home</button></div>';
+ wl.insertAdjacentElement('afterend',settings);
  const oldHero=$('top');if(oldHero)oldHero.hidden=true;const oldStats=document.querySelector('.stats.home-only');if(oldStats)oldStats.hidden=true;
  const search=$('bankaiSearch');search.addEventListener('input',()=>{const q=$('search');if(q){q.value=search.value;render();}if(activeView!=='anime')showBankaiView('anime');});
  const genre=$('genreTabs');if(genre&&!$('bkCategoryManage')){const b=document.createElement('button');b.id='bkCategoryManage';b.className='tab';b.textContent='＋ Manage Categories';b.onclick=manageCats;genre.appendChild(b);}
@@ -178,6 +203,8 @@ function wire(){
  }
 }
 window.showBankaiView=showBankaiView;
+window.openBankaiLibrary=()=>{if(native&&window.NOVA&&typeof NOVA.openLibrary==='function')NOVA.openLibrary();else showBankaiView('settings');};
+window.bankaiRefreshNativeVideos=async()=>{await syncNative();renderAll();};
 window.bankaiToggleWatchlist=toggleWL;
 window.bankaiRemoveWeekly=id=>{const x=watchingList.find(v=>v.id===id);if(!x)return;x.inWeekly=false;saveWatching();renderAll();};
 window.bankaiStartWatching=name=>{watchlist=watchlist.filter(v=>String(v).toLowerCase()!==String(name).toLowerCase());saveWL();showBankaiView('episodes');openLibraryAnime(name);renderAll();};
@@ -194,7 +221,7 @@ function init(){
  createShell();decorateCard();wire();
  if(typeof window.render==='function')window.render();
  if(typeof window.renderWatching==='function')window.renderWatching();
- if(native)syncNative().then(renderAll);
+ if(native)syncNative().then(()=>{renderAll();const info=$('bkStorageInfo');if(info)info.textContent='App video storage: '+(NOVA.storageBytes()/1048576).toFixed(1)+' MB';});
  renderAll();showBankaiView('home');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
