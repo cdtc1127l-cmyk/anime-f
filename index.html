@@ -1128,20 +1128,35 @@ async function saveWatchingAnime(){
  const file=document.getElementById('wPoster').files[0];
  let poster='';
  try{poster=await compressWatchImage(file);}catch(e){toast('Could not read the poster image. Try another file.');return;}
- const item={id:'w'+Date.now()+Math.random().toString(36).slice(2,6),name,year:year||'',day,seasons,episodes,poster,done:{},created:Date.now()};
+ const item={id:'w'+Date.now()+Math.random().toString(36).slice(2,6),name,year:year||'',day,seasons,episodes,episodesBySeason:Array(seasons).fill(episodes),poster,done:{},created:Date.now()};
  watchingList.unshift(item);saveWatching();closeWatchingAdd();
  ['wName','wYear','wPoster'].forEach(id=>document.getElementById(id).value='');
  document.getElementById('wSeasons').value=1;document.getElementById('wEpisodes').value=12;
  if(watchDay!=='All')watchDay=item.day;
  renderWatching();
 }
+function seasonEpisodeCount(item,sn){
+ const a=Array.isArray(item.episodesBySeason)?parseInt(item.episodesBySeason[sn-1]):0;
+ return Math.max(1,Math.min(200,a||parseInt(item.episodes)||12));
+}
+function normalizeEpisodePlan(item){
+ item.seasons=Math.max(1,Math.min(30,parseInt(item.seasons)||1));
+ const base=Math.max(1,Math.min(200,parseInt(item.episodes)||12));
+ if(!Array.isArray(item.episodesBySeason))item.episodesBySeason=Array(item.seasons).fill(base);
+ item.episodesBySeason=item.episodesBySeason.slice(0,item.seasons);
+ while(item.episodesBySeason.length<item.seasons)item.episodesBySeason.push(base);
+ item.episodesBySeason=item.episodesBySeason.map(n=>Math.max(1,Math.min(200,parseInt(n)||base)));
+ item.episodes=item.episodesBySeason[0]||base;
+}
 function watchingProgress(item){
- const total=item.seasons*item.episodes;let done=0;
- Object.keys(item.done||{}).forEach(k=>{if(!item.done[k])return;const p=k.split('-').map(Number);if(p[0]>=1&&p[0]<=item.seasons&&p[1]>=1&&p[1]<=item.episodes)done++;});
+ normalizeEpisodePlan(item);
+ const total=item.episodesBySeason.reduce((a,n)=>a+n,0);let done=0;
+ Object.keys(item.done||{}).forEach(k=>{if(!item.done[k])return;const p=k.split('-').map(Number),max=seasonEpisodeCount(item,p[0]);if(p[0]>=1&&p[0]<=item.seasons&&p[1]>=1&&p[1]<=max)done++;});
  return {total,done,pct:total?Math.round(done/total*100):0};
 }
 function nextEpisode(item){
- for(let s=1;s<=item.seasons;s++)for(let e=1;e<=item.episodes;e++)if(!(item.done||{})[s+'-'+e])return{s,e};
+ normalizeEpisodePlan(item);
+ for(let s=1;s<=item.seasons;s++)for(let e=1;e<=seasonEpisodeCount(item,s);e++)if(!(item.done||{})[s+'-'+e])return{s,e};
  return null;
 }
 function renderWatching(){
@@ -1176,24 +1191,29 @@ function renderResume(){
 }
 function openWatchingDetail(id){
  const item=watchingList.find(x=>x.id===id);if(!item)return;
+ normalizeEpisodePlan(item);
  const p=watchingProgress(item),box=document.getElementById('watchDetail'),keep=box.scrollTop;
  let seasons='';
  for(let sn=1;sn<=item.seasons;sn++){
-  seasons+=`<section class="episode-season"><h4>Season ${sn}</h4><div class="episode-grid">`;
-  for(let ep=1;ep<=item.episodes;ep++){
-   const k=sn+'-'+ep,done=!!item.done[k];
-   const hasVideo=!!videoRecords[videoKey(item.id,sn,ep)];
-   seasons+=`<div class="episode-tile ${done?'is-done':''}"><button class="ep-btn ${done?'done':''}" onclick="toggleWatchEpisode('${item.id}',${sn},${ep})" aria-pressed="${done}" title="Toggle watched status"><span class="ep-check">${done?'✓':'○'}</span><span>EP ${ep}</span><small>${done?'WATCHED':'NOT WATCHED'}</small></button><div class="episode-file-actions">${hasVideo?`<button class="video-play" onclick="playEpisode('${item.id}',${sn},${ep})">▶ <span>Play Video</span></button><button class="video-add" onclick="chooseEpisodeVideo('${item.id}',${sn},${ep})" title="Replace saved video"><span class="upload-symbol">↻</span><span>Replace</span></button><button class="video-delete" onclick="removeEpisodeVideo('${item.id}',${sn},${ep})" title="Delete saved video" aria-label="Delete saved video">Delete</button>`:`<button class="video-add" onclick="chooseEpisodeVideo('${item.id}',${sn},${ep})"><span class="upload-symbol">＋</span><span>Upload Video</span></button>`}</div><div class="${hasVideo?'video-saved':'video-empty'}">${hasVideo?'<i></i> VIDEO SAVED · '+formatBytes(videoRecords[videoKey(item.id,sn,ep)].size||0):'No video added'}</div></div>`;
+  const maxEp=seasonEpisodeCount(item,sn);
+  seasons+=`<section class="episode-season"><h4>Season ${sn} <span class="season-count">${maxEp} Episodes</span></h4><div class="episode-grid">`;
+  for(let ep=1;ep<=maxEp;ep++){
+   const k=sn+'-'+ep,done=!!item.done[k],hasVideo=!!videoRecords[videoKey(item.id,sn,ep)];
+   seasons+=`<div class="episode-tile ${done?'is-done':''}"><button class="ep-btn ${done?'done':''}" onclick="toggleWatchEpisode('${item.id}',${sn},${ep})" aria-pressed="${done}" title="Toggle watched status"><span class="ep-check">${done?'✓':'○'}</span><span>EP ${ep}</span><small>${done?'WATCHED':'NOT WATCHED'}</small></button><div class="episode-file-actions">${hasVideo?`<button class="video-play" onclick="playEpisode('${item.id}',${sn},${ep})">▶ <span>Play Video</span></button><button class="video-add" onclick="chooseEpisodeVideo('${item.id}',${sn},${ep})" title="Replace saved video"><span class="upload-symbol">↻</span><span>Replace</span></button><button class="video-delete" onclick="removeEpisodeVideo('${item.id}',${sn},${ep})" title="Delete saved video">Delete</button>`:`<button class="video-add" onclick="chooseEpisodeVideo('${item.id}',${sn},${ep})"><span class="upload-symbol">＋</span><span>Upload Video</span></button>`}</div><div class="${hasVideo?'video-saved':'video-empty'}">${hasVideo?'<i></i> VIDEO SAVED · '+formatBytes(videoRecords[videoKey(item.id,sn,ep)].size||0):'No video added'}</div></div>`;
   }
   seasons+='</div></section>';
  }
+ const seasonInputs=Array.from({length:item.seasons},(_,i)=>`<label><span>Season ${i+1} EP</span><input id="seasonEp_${i+1}" class="input" type="number" min="1" max="200" value="${seasonEpisodeCount(item,i+1)}"></label>`).join('');
  box.innerHTML=`<div class="modal-head"><div><h3>${esc(item.name)}</h3><p>${item.year?esc(item.year)+' · ':''}${esc(item.day)} · ${item.seasons} Season · ${p.total} Episode</p></div><button class="x" onclick="closeWatchingDetail()" aria-label="Close">✕</button></div>
   <div class="detail-head">${item.poster?`<img class="detail-poster" src="${item.poster}" alt="Poster">`:''}<div style="flex:1;min-width:0"><div class="progress-track" style="margin-top:4px"><div class="progress-fill" style="width:${p.pct}%"></div></div><div class="watch-meta"><b>${p.pct}%</b> · ${p.done} / ${p.total} episodes watched</div></div></div>
-  <div class="edit-row"><label><span>Seasons</span><input id="eSeasons" class="input" type="number" min="1" max="30" value="${item.seasons}"></label><label><span>EP / Season</span><input id="eEpisodes" class="input" type="number" min="1" max="200" value="${item.episodes}"></label><label><span>Day</span><select id="eDay">${DAYS.map(d=>`<option ${d===item.day?'selected':''}>${d}</option>`).join('')}</select></label><button class="btn sm primary" onclick="updateWatchingMeta('${item.id}')">Save</button></div>
-  ${seasons}
-  <div class="modal-actions" style="margin-top:20px"><button onclick="closeWatchingDetail()">Close</button></div>`;
- document.getElementById('watchDetailBg').style.display='grid';
- box.scrollTop=keep;
+  <div class="edit-row"><label><span>Seasons</span><input id="eSeasons" class="input" type="number" min="1" max="30" value="${item.seasons}" oninput="renderSeasonEpisodeInputs('${item.id}')"></label><div id="seasonEpisodeInputs" class="season-inputs">${seasonInputs}</div><label><span>Day</span><select id="eDay">${DAYS.map(d=>`<option ${d===item.day?'selected':''}>${d}</option>`).join('')}</select></label><button class="btn sm primary" onclick="updateWatchingMeta('${item.id}')">Save</button></div>
+  ${seasons}<div class="modal-actions" style="margin-top:20px"><button onclick="closeWatchingDetail()">Close</button></div>`;
+ document.getElementById('watchDetailBg').style.display='grid';box.scrollTop=keep;
+}
+function renderSeasonEpisodeInputs(id){
+ const item=watchingList.find(x=>x.id===id),box=document.getElementById('seasonEpisodeInputs');if(!item||!box)return;
+ const n=Math.max(1,Math.min(30,parseInt(document.getElementById('eSeasons').value)||1));normalizeEpisodePlan(item);
+ box.innerHTML=Array.from({length:n},(_,i)=>`<label><span>Season ${i+1} EP</span><input id="seasonEp_${i+1}" class="input" type="number" min="1" max="200" value="${item.episodesBySeason[i]||item.episodesBySeason[0]||12}"></label>`).join('');
 }
 function closeWatchingDetail(){document.getElementById('watchDetailBg').style.display='none';const l=document.getElementById('library');if(l&&!l.hidden)render();}
 function toggleWatchEpisode(id,season,episode){
@@ -1405,10 +1425,14 @@ function renderDayTabs(){
 function setWatchDay(d){watchDay=d;renderWatching();}
 function updateWatchingMeta(id){
  const item=watchingList.find(x=>x.id===id);if(!item)return;
+ normalizeEpisodePlan(item);
  const sn=Math.max(1,Math.min(30,parseInt(document.getElementById('eSeasons').value)||1));
  const ep=Math.max(1,Math.min(200,parseInt(document.getElementById('eEpisodes').value)||1));
- item.seasons=sn;item.episodes=ep;item.day=document.getElementById('eDay').value;
- saveWatching();renderWatching();openWatchingDetail(id);toast('Saved');
+ item.seasons=sn;
+ item.episodesBySeason=Array.from({length:sn},(_,i)=>Math.max(1,Math.min(200,parseInt(document.getElementById('seasonEp_'+(i+1))?.value)||item.episodesBySeason[i]||ep)));
+ item.episodes=item.episodesBySeason[0]||ep;
+ item.day=document.getElementById('eDay').value;
+ saveWatching();renderWatching();openWatchingDetail(id);toast('Season episode plan saved');
 }
 let libSetupName='';
 function openLibraryAnime(name){
@@ -1425,7 +1449,7 @@ function saveLibSetup(){
  const seasons=Math.max(1,Math.min(30,parseInt(document.getElementById('lSeasons').value)||1));
  const episodes=Math.max(1,Math.min(200,parseInt(document.getElementById('lEpisodes').value)||1));
  const day=document.getElementById('lDay').value;
- const item={id:'w'+Date.now()+Math.random().toString(36).slice(2,6),name,year:'',day,seasons,episodes,poster:posterCache[name]||'',done:{},created:Date.now(),fromLibrary:true};
+ const item={id:'w'+Date.now()+Math.random().toString(36).slice(2,6),name,year:'',day,seasons,episodes,episodesBySeason:Array(seasons).fill(episodes),poster:posterCache[name]||'',done:{},created:Date.now(),fromLibrary:true};
  watchingList.unshift(item);saveWatching();closeLibSetup();renderWatching();openWatchingDetail(item.id);
 }
 document.getElementById('content').addEventListener('keydown',e=>{
