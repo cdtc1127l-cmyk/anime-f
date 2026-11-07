@@ -1759,16 +1759,16 @@ setTimeout(()=>{try{renderShotDashboard();}catch(e){}},900);
     if(!box || !box.innerHTML || box.querySelector('.season-manager')) return;
     const edit=box.querySelector('.edit-row');
     if(!edit) return;
-    const id=(edit.querySelector('button[onclick*="updateWatchingMeta"]')?.getAttribute('onclick')||'').match(/updateWatchingMeta\\('([^']+)'/)?.[1];
+    const id=(edit.querySelector('button[onclick*="updateWatchingMeta"]')?.getAttribute('onclick')||'').match(/updateWatchingMeta\('([^']+)'/)?.[1];
     if(!id) return;
-    const item=Array.isArray(window.watchingList)?window.watchingList.find(x=>x.id===id):null;
+    const item=Array.isArray(watchingList)?watchingList.find(x=>x.id===id):null;
     if(!item) return;
     normalizeEpisodePlan(item);
     const bar=document.createElement('div');
     bar.className='season-manager';
     bar.innerHTML='<span class="sm-title">Season Manager</span>'+
       '<span class="season-info">'+item.seasons+' season'+(item.seasons===1?'':'s')+' · '+item.episodesBySeason.reduce((a,n)=>a+n,0)+' episodes</span>'+
-      '<button type="button" class="add" onclick="addWatchingSeason(\\''+shotEsc?''+id+'\\')">＋ Add Season</button>'+
+      '<button type="button" class="add" onclick="addWatchingSeason(\\''+id+'\\')">＋ Add Season</button>'+
       (item.seasons>1?'<button type="button" class="remove" onclick="removeWatchingSeason(\\''+id+'\\')">− Remove Last</button>':'');
     edit.parentNode.insertBefore(bar,edit);
   }
