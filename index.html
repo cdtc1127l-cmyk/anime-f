@@ -562,7 +562,46 @@ body.reels-view .home-only{display:none!important}body.reels-view #watching,body
 @media(max-width:360px){.dock a,.dock button{min-width:43px;padding:7px 5px}.dock svg.i{width:18px;height:18px}}
 
 </style>
-</head>
+
+/* === Screenshot-matched dashboard v2 === */
+:root{--shot-purple:#7c22ff;--shot-violet:#b44cff;--shot-pink:#f03cff;--shot-bg:#080016;--shot-card:rgba(20,5,45,.72);--shot-line:rgba(179,94,255,.34)}
+body{background:radial-gradient(circle at 30% 0%,#26005c 0,#090016 38%,#05000b 100%)!important}
+body:before{opacity:.08!important}
+.wrap{width:100%!important;margin:0!important}
+#nav{display:none!important}
+.shot-shell{min-height:100vh;display:flex;position:relative}
+.shot-sidebar{position:fixed;z-index:80;left:12px;top:12px;bottom:12px;width:142px;border:1px solid var(--shot-line);border-radius:20px;background:linear-gradient(180deg,rgba(16,0,38,.94),rgba(8,0,22,.88));box-shadow:0 0 45px rgba(112,0,255,.22),inset 0 1px rgba(255,255,255,.06);display:flex;flex-direction:column;align-items:center;padding:18px 10px}
+.shot-brand{width:100%;text-align:center;color:#fff;text-decoration:none;font-weight:800;font-size:15px;letter-spacing:-.02em;margin-bottom:20px}
+.shot-brand .shot-logo{width:58px;height:58px;margin:0 auto 8px;border-radius:18px;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#ff55ff,#6e13ff 65%,#1b003e);box-shadow:0 0 30px rgba(191,46,255,.7);font-size:28px}
+.shot-nav{width:100%;display:flex;flex-direction:column;gap:8px}
+.shot-nav button{width:100%;min-height:42px;border:1px solid transparent;background:transparent;color:#bcaed3;border-radius:12px;display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:0 13px;font-size:12px;font-weight:600}
+.shot-nav button:hover{transform:none;background:rgba(151,45,255,.14);border-color:rgba(185,94,255,.2);box-shadow:none}
+.shot-nav button.active{color:#fff;background:linear-gradient(100deg,rgba(126,29,255,.95),rgba(89,13,211,.55));border-color:rgba(210,135,255,.55);box-shadow:0 0 24px rgba(134,36,255,.55),inset 0 0 18px rgba(216,70,255,.16)}
+.shot-nav .si{width:18px;text-align:center;font-size:16px}
+.shot-bottom{margin-top:auto;width:100%}.shot-bottom button{width:100%}
+.shot-content{margin-left:166px;width:calc(100% - 178px);padding:12px 12px 40px}
+.shot-topbar{height:60px;border:1px solid var(--shot-line);border-radius:18px;background:rgba(15,2,35,.72);backdrop-filter:blur(22px);display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:14px;box-shadow:0 0 35px rgba(113,0,255,.14)}
+.shot-toplinks{display:flex;gap:4px;flex:1}.shot-toplinks span{padding:10px 13px;color:#c8bdd9;font-size:12px;border-radius:12px}.shot-toplinks span.active{color:#fff;background:rgba(137,42,255,.28);box-shadow:inset 0 0 0 1px rgba(206,120,255,.22)}
+.shot-search{width:250px;height:38px;border:1px solid rgba(194,100,255,.25);border-radius:999px;background:rgba(9,0,23,.72);display:flex;align-items:center;gap:9px;padding:0 14px;color:#8f82a5;font-size:12px}
+.shot-profile{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#7c20ff,#ff36d9);box-shadow:0 0 18px rgba(184,48,255,.55)}
+.shot-home{display:block!important}.shot-old-home{display:none!important}
+.shot-hero{position:relative;min-height:350px;border:1px solid rgba(184,94,255,.48);border-radius:24px;overflow:hidden;background:#17002e url('hero.webp') center/cover no-repeat;box-shadow:0 0 50px rgba(121,23,255,.26)}
+.shot-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,0,23,.98) 0%,rgba(18,0,38,.84) 38%,rgba(27,0,53,.22) 72%,rgba(7,0,15,.1)),linear-gradient(0deg,rgba(9,0,23,.78),transparent 55%)}
+.shot-hero-copy{position:relative;z-index:2;max-width:640px;padding:46px 36px}
+.shot-kicker{display:inline-flex;gap:8px;align-items:center;padding:7px 13px;border-radius:999px;background:rgba(123,31,255,.32);border:1px solid rgba(215,120,255,.35);font-size:11px;color:#f4ddff}
+.shot-hero h1{font-size:46px!important;line-height:1.05!important;margin:18px 0 8px!important;color:#fff!important;text-shadow:0 0 35px rgba(198,75,255,.45)}
+.shot-hero p{margin:0;color:#cfc1dd;font-size:13px}.shot-progress{margin-top:16px;width:420px;max-width:90%;height:7px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}.shot-progress i{display:block;width:50%;height:100%;background:linear-gradient(90deg,#a400ff,#f3a7ff);box-shadow:0 0 18px #c347ff}
+.shot-actions{display:flex;gap:9px;margin-top:18px}.shot-actions button{border:1px solid rgba(216,119,255,.3);background:rgba(85,13,153,.52);color:#fff;border-radius:999px;padding:10px 18px;font-size:12px}.shot-actions button.primary{background:linear-gradient(100deg,#8d10ff,#d23cff);box-shadow:0 0 25px rgba(187,36,255,.45)}
+.shot-stats{position:absolute;right:18px;top:18px;width:250px;z-index:3;padding:18px;border:1px solid rgba(193,93,255,.42);border-radius:18px;background:rgba(12,0,28,.72);backdrop-filter:blur(18px)}
+.shot-stats h3{margin:0 0 14px;font-size:13px}.shot-stat{display:flex;align-items:center;gap:10px;margin:13px 0}.shot-stat .bubble{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(150,30,255,.3);color:#fff}.shot-stat b{font-size:18px}.shot-stat small{display:block;color:#a99ab9;font-size:10px}.shot-mini{height:5px;border-radius:99px;background:rgba(255,255,255,.1);margin-top:4px}.shot-mini i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#b51fff,#f5b0ff)}
+.shot-grid{display:grid;grid-template-columns:1.15fr 1.15fr .9fr;gap:14px;margin-top:14px}.shot-panel{border:1px solid rgba(181,88,255,.34);border-radius:19px;background:rgba(18,2,40,.72);padding:15px;box-shadow:0 15px 45px rgba(70,0,130,.12)}.shot-panel h3{margin:0 0 13px;font-size:13px;color:#fff}.shot-panel h3 span{color:#9d7ab8;font-size:10px;float:right}
+.shot-item{display:flex;gap:10px;align-items:center;padding:7px;border-radius:12px}.shot-item:hover{background:rgba(155,44,255,.12)}.shot-cover{width:55px;height:70px;border-radius:10px;object-fit:cover;background:linear-gradient(135deg,#4b0b78,#170027)}.shot-item b{font-size:12px}.shot-item small{display:block;color:#a99ab9;font-size:9px;margin-top:4px}.shot-play{margin-left:auto;border:0!important;background:linear-gradient(100deg,#8416ff,#d43dff)!important;border-radius:999px!important;padding:8px 11px!important}
+.shot-watch{display:flex;gap:9px;overflow:hidden}.shot-watch img{width:19%;min-width:58px;aspect-ratio:2/3;object-fit:cover;border-radius:11px;border:1px solid rgba(194,98,255,.25)}
+.shot-quote{margin-top:14px;min-height:88px;display:flex;align-items:center;padding:18px;border-radius:18px;border:1px solid rgba(185,87,255,.28);background:linear-gradient(120deg,rgba(107,17,171,.35),rgba(37,0,66,.55));color:#d8cbe6;font-size:13px;font-style:italic}
+#top,#top+.stats{display:none!important}
+@media(max-width:1050px){.shot-stats{position:relative;right:auto;top:auto;width:auto;margin:12px}.shot-hero{min-height:520px}.shot-grid{grid-template-columns:1fr 1fr}.shot-grid .shot-panel:last-child{grid-column:1/-1}}
+@media(max-width:720px){.shot-sidebar{position:fixed;left:6px;right:6px;bottom:6px;top:auto;width:auto;height:66px;flex-direction:row;padding:7px;border-radius:18px}.shot-brand,.shot-bottom{display:none}.shot-nav{flex-direction:row;justify-content:space-around}.shot-nav button{min-height:50px;justify-content:center;padding:0 7px;font-size:9px;flex-direction:column;gap:2px}.shot-nav .si{font-size:17px}.shot-content{margin-left:0;width:100%;padding:8px 8px 88px}.shot-topbar{height:52px}.shot-toplinks{display:none}.shot-search{margin-left:auto;width:170px}.shot-hero{min-height:500px}.shot-hero-copy{padding:32px 22px}.shot-hero h1{font-size:34px!important}.shot-stats{display:none}.shot-grid{grid-template-columns:1fr}.shot-panel{min-width:0}.shot-cover{width:48px;height:62px}}
+</style></head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 
@@ -588,7 +627,39 @@ body.reels-view .home-only{display:none!important}body.reels-view #watching,body
   </div>
  </header>
 
- <!-- ═════════ HERO ═════════ -->
+ 
+<!-- Screenshot-matched Home Dashboard -->
+<section class="shot-home shot-home-only" aria-label="Anime Tracker Home">
+ <aside class="shot-sidebar">
+  <a class="shot-brand" href="#top" onclick="switchView('home',event)"><div class="shot-logo">✦</div>Anime<br>Tracker</a>
+  <nav class="shot-nav">
+   <button class="active" onclick="shotGo('home')"><span class="si">⌂</span>Home</button>
+   <button onclick="shotGo('library')"><span class="si">☆</span>My Anime</button>
+   <button onclick="shotGo('watching')"><span class="si">▶</span>Episodes</button>
+   <button onclick="shotGo('watching')"><span class="si">▣</span>Weekly</button>
+   <button onclick="shotGo('stats')"><span class="si">▥</span>Stats</button>
+  </nav>
+  <div class="shot-bottom"><button onclick="openStorage()">⚙ Settings</button></div>
+ </aside>
+ <div class="shot-content">
+  <div class="shot-topbar">
+   <div class="shot-toplinks"><span class="active">Home</span><span onclick="shotGo('library')">My Anime</span><span onclick="shotGo('watching')">Episodes</span><span onclick="shotGo('watching')">Weekly</span><span onclick="shotGo('stats')">Stats</span></div>
+   <div class="shot-search">⌕ <span>Search anime...</span></div><div class="shot-profile">✦</div>
+  </div>
+  <div class="shot-hero">
+   <div class="shot-hero-copy"><span class="shot-kicker">▶ Continue Watching</span><h1 id="shotHeroTitle">The Lost Demon</h1><p id="shotHeroMeta">Season 1 • Episode 12 / 24</p><div class="shot-progress"><i id="shotHeroProgress"></i></div><p style="margin-top:12px">A journey of destiny, power and forgotten memories...</p><div class="shot-actions"><button class="primary" onclick="openWatchingAdd()">▶ Continue</button><button onclick="openWatchingAdd()">↥ Upload</button><button onclick="openWatchingAdd()">↻ Replace</button><button>•••</button></div></div>
+   <div class="shot-stats"><h3>⌁ Your Anime Stats</h3><div class="shot-stat"><span class="bubble">▶</span><div><b id="shotWatching">0</b><small>Watching</small><div class="shot-mini"><i style="width:55%"></i></div></div></div><div class="shot-stat"><span class="bubble">✓</span><div><b id="shotCompleted">0</b><small>Completed Anime</small><div class="shot-mini"><i style="width:35%"></i></div></div></div><div class="shot-stat"><span class="bubble">▣</span><div><b id="shotEpisodes">0</b><small>Episodes Watched</small><div class="shot-mini"><i style="width:28%"></i></div></div></div><div class="shot-stat"><span class="bubble">◷</span><div><b id="shotHours">0h</b><small>Watch Time</small><div class="shot-mini"><i style="width:46%"></i></div></div></div></div>
+  </div>
+  <div class="shot-grid">
+   <div class="shot-panel"><h3>◷ Recently Watched <span>See all →</span></h3><div id="shotRecent"></div></div>
+   <div class="shot-panel"><h3>ϟ New Episodes <span>See all →</span></h3><div id="shotNew"></div></div>
+   <div class="shot-panel"><h3>▣ Weekly Releases <span>This Week →</span></h3><div id="shotWeekly"></div></div>
+  </div>
+  <div class="shot-panel" style="margin-top:14px"><h3>★ My Watchlist <span onclick="shotGo('library')">View All →</span></h3><div class="shot-watch" id="shotWatchlist"></div></div>
+  <div class="shot-quote">“Anime is not just entertainment,<br>It's a journey of endless imagination.” ✦</div>
+ </div>
+</section>
+<!-- ═════════ HERO ═════════ -->
  <section class="hero home-only" id="top">
   <div class="scene hero-art" aria-hidden="true"><img src="hero.webp" alt=""></div>
   <div class="sparks" aria-hidden="true"><span style="--x:70%;--s:2.0px;--c:#67e8f9;--t:13.9s;--d:-13.7s;--o:0.84;--dx:-85px"></span><span style="--x:46%;--s:2.0px;--c:#f0abfc;--t:11.4s;--d:-16.0s;--o:0.42;--dx:-26px"></span><span style="--x:31%;--s:4.0px;--c:#f0abfc;--t:18.7s;--d:-12.2s;--o:0.71;--dx:114px"></span><span style="--x:61%;--s:3.0px;--c:#c084fc;--t:10.2s;--d:-15.4s;--o:0.56;--dx:-99px"></span><span style="--x:24%;--s:3.0px;--c:#c084fc;--t:18.5s;--d:-16.6s;--o:0.46;--dx:-82px"></span><span style="--x:58%;--s:2.0px;--c:#c084fc;--t:14.7s;--d:-16.4s;--o:0.79;--dx:102px"></span><span style="--x:19%;--s:4.0px;--c:#67e8f9;--t:12.8s;--d:-14.1s;--o:0.46;--dx:-37px"></span><span style="--x:20%;--s:5.0px;--c:#67e8f9;--t:13.8s;--d:-7.2s;--o:0.65;--dx:62px"></span><span style="--x:47%;--s:4.0px;--c:#67e8f9;--t:17.6s;--d:-3.7s;--o:0.54;--dx:-103px"></span><span style="--x:68%;--s:3.0px;--c:#c084fc;--t:15.2s;--d:-9.3s;--o:0.72;--dx:3px"></span><span style="--x:56%;--s:2.5px;--c:#c084fc;--t:10.0s;--d:-1.0s;--o:0.71;--dx:66px"></span><span style="--x:15%;--s:2.5px;--c:#f0abfc;--t:9.2s;--d:-5.8s;--o:0.54;--dx:-100px"></span><span style="--x:87%;--s:3.0px;--c:#c084fc;--t:16.7s;--d:-9.3s;--o:0.38;--dx:-25px"></span><span style="--x:25%;--s:2.0px;--c:#67e8f9;--t:10.5s;--d:-10.7s;--o:0.37;--dx:-45px"></span><span style="--x:43%;--s:5.0px;--c:#67e8f9;--t:14.2s;--d:-9.9s;--o:0.51;--dx:-12px"></span><span style="--x:38%;--s:2.5px;--c:#c084fc;--t:14.3s;--d:-8.1s;--o:0.42;--dx:4px"></span><span style="--x:36%;--s:2.0px;--c:#c084fc;--t:12.7s;--d:-11.0s;--o:0.42;--dx:84px"></span><span style="--x:74%;--s:4.0px;--c:#f0abfc;--t:17.1s;--d:-17.6s;--o:0.50;--dx:41px"></span><span style="--x:90%;--s:2.5px;--c:#c084fc;--t:15.7s;--d:-17.2s;--o:0.78;--dx:-64px"></span><span style="--x:63%;--s:2.0px;--c:#ffffff;--t:10.2s;--d:-8.9s;--o:0.59;--dx:103px"></span><span style="--x:29%;--s:3.0px;--c:#67e8f9;--t:10.6s;--d:-7.2s;--o:0.59;--dx:-80px"></span><span style="--x:66%;--s:2.5px;--c:#f0abfc;--t:16.4s;--d:-16.3s;--o:0.75;--dx:-5px"></span><span style="--x:27%;--s:5.0px;--c:#c084fc;--t:16.0s;--d:-0.4s;--o:0.55;--dx:-33px"></span><span style="--x:8%;--s:4.0px;--c:#c084fc;--t:9.5s;--d:-8.9s;--o:0.64;--dx:-7px"></span><span style="--x:33%;--s:3.0px;--c:#f0abfc;--t:9.2s;--d:-6.2s;--o:0.80;--dx:16px"></span><span style="--x:27%;--s:2.5px;--c:#ffffff;--t:12.8s;--d:-6.1s;--o:0.80;--dx:-113px"></span><span style="--x:70%;--s:2.5px;--c:#f0abfc;--t:15.3s;--d:-11.2s;--o:0.56;--dx:-20px"></span><span style="--x:29%;--s:4.0px;--c:#ffffff;--t:12.8s;--d:-16.4s;--o:0.37;--dx:-87px"></span><span style="--x:51%;--s:3.0px;--c:#ffffff;--t:12.6s;--d:-17.6s;--o:0.42;--dx:-74px"></span><span style="--x:24%;--s:2.5px;--c:#67e8f9;--t:14.2s;--d:-16.7s;--o:0.84;--dx:-119px"></span></div>
@@ -1512,6 +1583,42 @@ if(matchMedia('(hover:hover)').matches){
  }
 }
 
+</script>
+
+<script>
+function shotGo(view){
+ if(view==='home'){document.querySelector('.shot-home')?.scrollIntoView({behavior:'smooth'});return;}
+ if(view==='stats'){document.querySelector('.shot-home')?.scrollIntoView({behavior:'smooth'});return;}
+ switchView(view==='library'?'library':'watching');
+}
+function shotImg(item){
+ return item&&item.poster?item.poster:'';
+}
+function shotEsc(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+function renderShotDashboard(){
+ const list=(typeof watchingList!=='undefined'&&Array.isArray(watchingList))?watchingList:[];
+ const recent=list.slice(0,4), watch=list.slice(0,6);
+ const completed=list.filter(x=>x.done&&Object.values(x.done).filter(Boolean).length>=((x.seasons||1)*(x.episodes||1))).length;
+ const eps=list.reduce((n,x)=>n+(x.done?Object.values(x.done).filter(Boolean).length:0),0);
+ const watching=Math.max(0,list.length-completed);
+ document.getElementById('shotWatching').textContent=watching;
+ document.getElementById('shotCompleted').textContent=completed;
+ document.getElementById('shotEpisodes').textContent=eps;
+ document.getElementById('shotHours').textContent=Math.round(eps*0.4)+'h';
+ if(list[0]){
+  const x=list[0], done=x.done?Object.values(x.done).filter(Boolean).length:0, total=Math.max(1,(x.seasons||1)*(x.episodes||1));
+  document.getElementById('shotHeroTitle').textContent=x.name||'Continue Watching';
+  document.getElementById('shotHeroMeta').textContent='Season '+(x.seasons||1)+' • Episode '+Math.min(total,done+1)+' / '+total;
+  document.getElementById('shotHeroProgress').style.width=Math.round(done/total*100)+'%';
+ }
+ const itemHtml=(x)=>'<div class="shot-item">'+(shotImg(x)?'<img class="shot-cover" src="'+shotEsc(shotImg(x))+'" alt="">':'<div class="shot-cover"></div>')+'<div><b>'+shotEsc(x.name||'Untitled Anime')+'</b><small>S'+(x.seasons||1)+' • E'+(x.episodes||0)+'</small></div><button class="shot-play" onclick="openWatchingDetail(\''+shotEsc(x.id||'')+'\')">▶</button></div>';
+ document.getElementById('shotRecent').innerHTML=recent.length?recent.map(itemHtml).join(''):'<div style="color:#9d8eaa;font-size:11px;padding:15px">No watched anime yet.</div>';
+ document.getElementById('shotNew').innerHTML=(watch.length?watch.slice(0,3):[]).map(itemHtml).join('')||'<div style="color:#9d8eaa;font-size:11px;padding:15px">Add anime to see new episodes.</div>';
+ document.getElementById('shotWeekly').innerHTML=(watch.length?watch.slice(0,4):[]).map((x,i)=>'<div class="shot-item"><div class="shot-cover" style="background:linear-gradient(135deg,#5a12a5,#17002e);display:grid;place-items:center;color:#fff;font-size:17px">'+(i+1)+'</div><div><b>'+shotEsc(x.name||'Anime')+'</b><small>'+(x.day||'This week')+' • Episode '+(x.episodes||0)+'</small></div></div>').join('')||'<div style="color:#9d8eaa;font-size:11px;padding:15px">Weekly releases will appear here.</div>';
+ document.getElementById('shotWatchlist').innerHTML=watch.length?watch.map(x=>shotImg(x)?'<img src="'+shotEsc(shotImg(x))+'" alt="'+shotEsc(x.name)+'">':'<div class="shot-cover"></div>').join(''):'<div style="color:#9d8eaa;font-size:11px;padding:15px">Your watchlist is empty.</div>';
+}
+document.addEventListener('DOMContentLoaded',()=>setTimeout(renderShotDashboard,120));
+setTimeout(()=>{try{renderShotDashboard();}catch(e){}},900);
 </script>
 </body>
 </html>
