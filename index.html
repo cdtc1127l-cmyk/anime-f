@@ -1742,5 +1742,68 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 setTimeout(()=>{try{renderShotDashboard();}catch(e){}},900);
 </script>
+<style>
+/* Season manager — episode system */
+.season-manager{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 16px;padding:10px 12px;border:1px solid rgba(216,180,254,.14);border-radius:16px;background:rgba(255,255,255,.035)}
+.season-manager .sm-title{font-size:11px;font-weight:700;color:#b9a9d6;letter-spacing:.06em;text-transform:uppercase;margin-right:auto}
+.season-manager button{padding:7px 11px;border-radius:10px;font-size:11px}
+.season-manager .season-info{font-size:11px;color:#8573a8}
+.season-manager .add{border-color:rgba(103,232,249,.35);color:#a5f3fc}
+.season-manager .remove{border-color:rgba(251,113,133,.3);color:#fb7185}
+</style>
+<script>
+/* ── Season manager: add/remove seasons without disturbing existing videos ── */
+(function(){
+  function addSeasonControls(){
+    const box=document.getElementById('watchDetail');
+    if(!box || !box.innerHTML || box.querySelector('.season-manager')) return;
+    const edit=box.querySelector('.edit-row');
+    if(!edit) return;
+    const id=(edit.querySelector('button[onclick*="updateWatchingMeta"]')?.getAttribute('onclick')||'').match(/updateWatchingMeta\\('([^']+)'/)?.[1];
+    if(!id) return;
+    const item=Array.isArray(window.watchingList)?window.watchingList.find(x=>x.id===id):null;
+    if(!item) return;
+    normalizeEpisodePlan(item);
+    const bar=document.createElement('div');
+    bar.className='season-manager';
+    bar.innerHTML='<span class="sm-title">Season Manager</span>'+
+      '<span class="season-info">'+item.seasons+' season'+(item.seasons===1?'':'s')+' · '+item.episodesBySeason.reduce((a,n)=>a+n,0)+' episodes</span>'+
+      '<button type="button" class="add" onclick="addWatchingSeason(\\''+shotEsc?''+id+'\\')">＋ Add Season</button>'+
+      (item.seasons>1?'<button type="button" class="remove" onclick="removeWatchingSeason(\\''+id+'\\')">− Remove Last</button>':'');
+    edit.parentNode.insertBefore(bar,edit);
+  }
+  window.addWatchingSeason=function(id){
+    const item=watchingList.find(x=>x.id===id); if(!item)return;
+    normalizeEpisodePlan(item);
+    if(item.seasons>=30){toast('Maximum 30 seasons reached.');return;}
+    const base=seasonEpisodeCount(item,item.seasons);
+    item.seasons++;
+    item.episodesBySeason.push(base);
+    item.episodes=item.episodesBySeason[0]||base;
+    saveWatching();
+    openWatchingDetail(id);
+    toast('Season '+item.seasons+' added.');
+  };
+  window.removeWatchingSeason=function(id){
+    const item=watchingList.find(x=>x.id===id); if(!item)return;
+    normalizeEpisodePlan(item);
+    if(item.seasons<=1){toast('At least 1 season is required.');return;}
+    const removed=item.seasons;
+    if(!confirm('Remove Season '+removed+' from this anime? Existing saved video files are kept in NOVA storage, but the removed season will no longer appear in the episode list.'))return;
+    item.seasons--;
+    item.episodesBySeason=item.episodesBySeason.slice(0,item.seasons);
+    item.episodes=item.episodesBySeason[0]||12;
+    Object.keys(item.done||{}).forEach(k=>{const s=Number(k.split('-')[0]);if(s>item.seasons)delete item.done[k];});
+    saveWatching();
+    openWatchingDetail(id);
+    toast('Season '+removed+' removed.');
+  };
+  const watchBox=document.getElementById('watchDetail');
+  if(watchBox){
+    new MutationObserver(()=>addSeasonControls()).observe(watchBox,{childList:true,subtree:true});
+    setTimeout(addSeasonControls,200);
+  }
+})();
+</script>
 </body>
 </html>
